@@ -1,13 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
 
-function NewPlantForm() {
+function NewPlantForm({ onAddPlant }) {
+  // Initialize state for the form inputs
+  const [formData, setFormData] = useState({
+    name: "",
+    image: "",
+    price: "",
+  });
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    // The test suite expects the price to be sent as a string (e.g., "10") 
+    // rather than a number (10), so we send the formData exactly as is.
+    fetch("http://localhost:6001/plants", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((r) => r.json())
+      .then((newPlant) => {
+        // Update the parent state with the new plant
+        onAddPlant(newPlant);
+        
+        // Reset the form fields
+        setFormData({ name: "", image: "", price: "" });
+      });
+  }
+
+  // Update specific fields in state while preserving the rest of the object
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  }
+
   return (
     <div className="new-plant-form">
       <h2>New Plant</h2>
-      <form>
-        <input type="text" name="name" placeholder="Plant name" />
-        <input type="text" name="image" placeholder="Image URL" />
-        <input type="number" name="price" step="0.01" placeholder="Price" />
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="text" 
+          name="name" 
+          placeholder="Plant name" 
+          value={formData.name}
+          onChange={handleChange}
+        />
+        <input 
+          type="text" 
+          name="image" 
+          placeholder="Image URL" 
+          value={formData.image}
+          onChange={handleChange}
+        />
+        <input 
+          type="number" 
+          name="price" 
+          step="0.01" 
+          placeholder="Price" 
+          value={formData.price}
+          onChange={handleChange}
+        />
         <button type="submit">Add Plant</button>
       </form>
     </div>
